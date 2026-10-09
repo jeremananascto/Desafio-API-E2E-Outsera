@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Pagamento - Demo Shop</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 420px; margin: 40px auto; }
+    label { display: block; margin-top: 12px; font-weight: 600; }
+    input { width: 100%; padding: 8px; box-sizing: border-box; }
+    .error { color: #b00020; font-size: 13px; min-height: 16px; }
+    button { margin-top: 20px; padding: 10px 16px; }
+    #success { color: #1b7f3b; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>Pagamento</h1>
+  <p data-test="order-total">Total do pedido: R$ 129,90</p>
+  <form id="payment-form" novalidate>
+    <label for="card-name">Nome no cartão</label>
+    <input id="card-name" data-test="card-name" autocomplete="off" />
+    <div class="error" data-test="card-name-error"></div>
+
+    <label for="card-number">Número do cartão</label>
+    <input id="card-number" data-test="card-number" inputmode="numeric" autocomplete="off" />
+    <div class="error" data-test="card-number-error"></div>
+
+    <label for="card-expiry">Validade (MM/AA)</label>
+    <input id="card-expiry" data-test="card-expiry" placeholder="MM/AA" autocomplete="off" />
+    <div class="error" data-test="card-expiry-error"></div>
+
+    <label for="card-cvv">CVV</label>
+    <input id="card-cvv" data-test="card-cvv" inputmode="numeric" autocomplete="off" />
+    <div class="error" data-test="card-cvv-error"></div>
+
+    <button type="submit" data-test="pay-button">Pagar</button>
+  </form>
+  <p id="success" data-test="payment-success" hidden>Pagamento aprovado!</p>
+
+  <script>
+    function luhn(num) {
+      let sum = 0, alt = false;
+      for (let i = num.length - 1; i >= 0; i--) {
+        let d = Number(num[i]);
+        if (alt) { d *= 2; if (d > 9) d -= 9; }
+        sum += d; alt = !alt;
+      }
+      return sum % 10 === 0;
+    }
+    function validate(v) {
+      const e = {};
+      if (!v.name.trim()) e.name = 'Nome no cartão é obrigatório';
+      const digits = v.number.replace(/\s/g, '');
+      if (!digits) e.number = 'Número do cartão é obrigatório';
+      else if (!/^\d{13,19}$/.test(digits)) e.number = 'Número do cartão inválido';
+      else if (!luhn(digits)) e.number = 'Número do cartão inválido';
+      const m = /^(\d{2})\/(\d{2})$/.exec(v.expiry);
+      if (!v.expiry) e.expiry = 'Validade é obrigatória';
+      else if (!m || Number(m[1]) < 1 || Number(m[1]) > 12) e.expiry = 'Validade inválida';
+      else {
+        const now = new Date();
+        const exp = new Date(2000 + Number(m[2]), Number(m[1]), 1); // 1º dia do mês seguinte
+        if (exp <= now) e.expiry = 'Cartão expirado';
+      }
+      if (!v.cvv) e.cvv = 'CVV é obrigatório';
+      else if (!/^\d{3,4}$/.test(v.cvv)) e.cvv = 'CVV inválido';
+      return e;
+    }
+    document.getElementById('payment-form').addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      const q = (n) => document.querySelector('[data-test="' + n + '"]');
+      const errors = validate({
+        name: q('card-name').value, number: q('card-number').value,
+        expiry: q('card-expiry').value, cvv: q('card-cvv').value,
+      });
+      for (const f of ['name', 'number', 'expiry', 'cvv']) q('card-' + f + '-error').textContent = errors[f] || '';
+      q('payment-success').hidden = Object.keys(errors).length > 0;
+    });
+  </script>
+</body>
+</html>

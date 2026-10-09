@@ -1,0 +1,102 @@
+name: CI - Testes automatizados
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *' # execução noturna
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '20'
+  CI: 'true'
+
+jobs:
+  quality:
+    name: Qualidade estática
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - name: Valida Gherkin e bindings dos steps (dry-run)
+        run: npm run test:e2e:dry
+
+  api-tests:
+    name: Testes de API
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run test:api
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: api-report
+          path: reports/api
+          retention-days: 14
+
+  e2e-tests:
+    name: Testes E2E (Cucumber + Playwright)
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: Gera relatório HTML com evidências
+        if: always()
+        run: npm run report:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-report
+          path: reports/e2e
+          retention-days: 14
+
+  report:
+    name: Relatório consolidado
+    needs: [api-tests, e2e-tests]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: reports
+          pattern: '*-report'
+      - name: Reorganiza artefatos
+        run: |
+          for d in api e2e; do
+            [ -d "reports/$d-report" ] && mkdir -p "reports/$d" && cp -r "reports/$d-report/." "reports/$d/" || true
+          done
+      - name: Publica resumo no Job Summary
+        run: node scripts/ci-summary.js >> "$GITHUB_STEP_SUMMARY"
+      - name: Falha o pipeline se alguma suíte falhou
+        run: node scripts/ci-summary.js --strict > /dev/null
