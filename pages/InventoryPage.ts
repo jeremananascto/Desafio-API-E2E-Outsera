@@ -41,6 +41,7 @@ export class InventoryPage extends BasePage {
 
   async sortBy(optionValue: 'az' | 'za' | 'lohi' | 'hilo'): Promise<void> {
     await this.sortSelect.selectOption(optionValue);
+    await this.page.waitForURL(/cart\.html/);
   }
 
   async productNames(): Promise<string[]> {
