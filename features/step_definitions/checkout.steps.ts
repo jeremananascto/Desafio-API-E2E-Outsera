@@ -50,11 +50,13 @@ When('finalizo a compra', async function (this: CustomWorld) {
 });
 
 Then(/^o carrinho deve conter (\d+) produtos?$/, async function (this: CustomWorld, count: string) {
-  expect(await this.cartPage.itemCount()).toBe(Number(count));
+  await expect
+    .poll(() => this.cartPage.itemCount(), { message: 'itens no carrinho' })
+    .toBe(Number(count));
 });
 
 Then('o carrinho não deve listar {string}', async function (this: CustomWorld, product: string) {
-  expect(await this.cartPage.itemNames()).not.toContain(product);
+  await expect.poll(() => this.cartPage.itemNames()).not.toContain(product);
 });
 
 Then('o subtotal deve ser a soma dos preços dos produtos', async function (this: CustomWorld) {
