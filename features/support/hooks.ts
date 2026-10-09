@@ -44,7 +44,6 @@ After(async function (this: CustomWorld, scenario: ITestCaseHookParameter) {
   try {
     const screenshot = await this.page.screenshot({ fullPage: true });
     this.attach(screenshot, 'image/png');
-  } catch {
   } catch (error) {
   console.warn('Não foi possível capturar o screenshot:', error);
 }
