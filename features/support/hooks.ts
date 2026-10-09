@@ -13,8 +13,7 @@ import { env } from '../../src/config/env';
 import { CustomWorld } from './world';
 
 
-const demoApp = require('../../demo-app/server.js') as { start: (port: number) => Promise<Server> };
-
+const demoApp = await import('../../demo-app/server.js') as {start: (port: number) => Promise<Server>;};
 setDefaultTimeout(30_000);
 
 let browser: Browser;
@@ -46,7 +45,9 @@ After(async function (this: CustomWorld, scenario: ITestCaseHookParameter) {
     const screenshot = await this.page.screenshot({ fullPage: true });
     this.attach(screenshot, 'image/png');
   } catch {
-  
+  } catch (error) {
+  console.warn('Não foi possível capturar o screenshot:', error);
+}
   }
 
   if (failed) {
