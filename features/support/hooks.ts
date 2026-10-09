@@ -37,23 +37,30 @@ Before(async function (this: CustomWorld) {
   this.initPages();
 });
 
-After(async function (this: CustomWorld, scenario: ITestCaseHookParameter) {
+After(async function (
+  this: CustomWorld,
+  scenario: ITestCaseHookParameter
+) {
   const failed = scenario.result?.status === Status.FAILED;
 
-  
   try {
     const screenshot = await this.page.screenshot({ fullPage: true });
     this.attach(screenshot, 'image/png');
   } catch (error) {
-  console.warn('Não foi possível capturar o screenshot:', error);
-}
+    console.warn('Não foi possível capturar o screenshot:', error);
   }
 
   if (failed) {
-    const safeName = scenario.pickle.name.replace(/[^a-z0-9]+/gi, '_').slice(0, 80);
-    await this.context.tracing.stop({ path: `reports/e2e/traces/${safeName}.zip` });
+    const safeName = scenario.pickle.name
+      .replace(/[^a-z0-9]+/gi, '_')
+      .slice(0, 80);
+
+    await this.context.tracing.stop({
+      path: `reports/e2e/traces/${safeName}.zip`,
+    });
   } else {
     await this.context.tracing.stop();
   }
+
   await this.context.close();
 });
