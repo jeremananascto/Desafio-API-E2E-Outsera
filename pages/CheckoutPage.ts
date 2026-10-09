@@ -33,6 +33,7 @@ export class CheckoutPage extends BasePage {
 
   async cancel(): Promise<void> {
     await this.cancelButton.click();
+    await this.page.waitForURL(/cart\.html/);
   }
 
   async finish(): Promise<void> {
