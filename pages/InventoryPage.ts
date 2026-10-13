@@ -7,7 +7,9 @@ export class InventoryPage extends BasePage {
   private readonly items = this.byTest('inventory-item');
   private readonly cartLink = this.byTest('shopping-cart-link');
   private readonly cartBadge = this.byTest('shopping-cart-badge');
-  private readonly sortSelect = this.byTest('product-sort-container');
+  private readonly sortSelect = this.page
+    .locator('[data-test="product-sort-container"], select.product_sort_container')
+    .first();
 
   async open(baseURL: string): Promise<void> {
     await this.goto(`${baseURL}/inventory.html`);
@@ -37,11 +39,24 @@ export class InventoryPage extends BasePage {
 
   async openCart(): Promise<void> {
     await this.cartLink.click();
+    await this.page.waitForURL(/cart\.html/);
   }
 
   async sortBy(optionValue: 'az' | 'za' | 'lohi' | 'hilo'): Promise<void> {
-    await this.sortSelect.selectOption(optionValue);
-    await this.page.waitForURL(/cart\.html/);
+    try {
+      await this.sortSelect.waitFor({ state: 'visible', timeout: 10_000 });
+      await this.sortSelect.selectOption(optionValue, { timeout: 10_000 });
+    } catch (error) {
+      // Diagnóstico: mostra o que realmente existe na página quando o dropdown não é encontrado.
+      const testIds = await this.page
+        .locator('[data-test]')
+        .evaluateAll((els) => els.map((e) => e.getAttribute('data-test')))
+        .catch(() => []);
+      throw new Error(
+        `Falha ao ordenar por "${optionValue}". URL: ${this.page.url()}. ` +
+          `data-test na página: ${testIds.join(', ')}. Erro original: ${(error as Error).message}`,
+      );
+    }
   }
 
   async productNames(): Promise<string[]> {
