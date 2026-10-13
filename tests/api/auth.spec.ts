@@ -17,7 +17,6 @@ test.describe('POST /auth - positivos', { tag: ['@smoke', '@positive'] }, () => 
 });
 
 test.describe('POST /auth - negativos', { tag: '@negative' }, () => {
-  
   const invalidCredentials = [
     { name: 'senha incorreta', data: { username: env.api.username, password: 'errada' } },
     { name: 'usuário inexistente', data: { username: 'nao-existe', password: env.api.password } },

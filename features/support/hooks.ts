@@ -61,10 +61,7 @@ Before(async function (this: CustomWorld) {
   this.initPages();
 });
 
-After(async function (
-  this: CustomWorld,
-  scenario: ITestCaseHookParameter,
-) {
+After(async function (this: CustomWorld, scenario: ITestCaseHookParameter) {
   const failed = scenario.result?.status === Status.FAILED;
 
   try {
@@ -75,9 +72,7 @@ After(async function (
   }
 
   if (failed) {
-    const safeName = scenario.pickle.name
-      .replace(/[^a-z0-9]+/gi, '_')
-      .slice(0, 80);
+    const safeName = scenario.pickle.name.replace(/[^a-z0-9]+/gi, '_').slice(0, 80);
 
     await this.context.tracing.stop({
       path: `reports/e2e/traces/${safeName}.zip`,

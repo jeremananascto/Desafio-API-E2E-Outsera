@@ -17,7 +17,7 @@ export class CartPage extends BasePage {
     await this.byTest(`remove-${productName.toLowerCase().replace(/\s+/g, '-')}`).click();
   }
 
- async checkout(): Promise<void> {
+  async checkout(): Promise<void> {
     await this.checkoutButton.click();
     await this.page.waitForURL(/checkout-step-one\.html/);
   }

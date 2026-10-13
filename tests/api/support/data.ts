@@ -2,7 +2,6 @@ import { Booking } from './schemas';
 
 let counter = 0;
 
-
 export function buildBooking(overrides: Partial<Booking> = {}): Booking {
   counter += 1;
   const unique = `${Date.now().toString(36)}${counter}${Math.random().toString(36).slice(2, 6)}`;

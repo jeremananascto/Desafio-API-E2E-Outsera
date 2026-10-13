@@ -47,7 +47,7 @@ export class InventoryPage extends BasePage {
       await this.sortSelect.waitFor({ state: 'visible', timeout: 10_000 });
       await this.sortSelect.selectOption(optionValue, { timeout: 10_000 });
     } catch (error) {
-      // Diagnóstico: mostra o que realmente existe na página quando o dropdown não é encontrado.
+     
       const testIds = await this.page
         .locator('[data-test]')
         .evaluateAll((els) => els.map((e) => e.getAttribute('data-test')))
@@ -55,10 +55,10 @@ export class InventoryPage extends BasePage {
       throw new Error(
         `Falha ao ordenar por "${optionValue}". URL: ${this.page.url()}. ` +
           `data-test na página: ${testIds.join(', ')}. Erro original: ${(error as Error).message}`,
+        { cause: error },
       );
     }
   }
-
   async productNames(): Promise<string[]> {
     return this.byTest('inventory-item-name').allInnerTexts();
   }

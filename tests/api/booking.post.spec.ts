@@ -10,7 +10,6 @@ test.describe('POST /booking - positivos', { tag: ['@smoke', '@positive'] }, () 
 
     expect(body.booking).toEqual(payload);
 
-    
     const fetched = await request.get(`/booking/${body.bookingid}`);
     expect(fetched.status()).toBe(200);
 
@@ -41,7 +40,6 @@ test.describe('POST /booking - positivos', { tag: ['@smoke', '@positive'] }, () 
 });
 
 test.describe('POST /booking - negativos', { tag: '@negative' }, () => {
-  
   const REJECTED = [400, 500];
 
   const requiredFields = ['firstname', 'lastname', 'totalprice', 'depositpaid', 'bookingdates'];

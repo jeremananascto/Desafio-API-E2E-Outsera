@@ -1,6 +1,5 @@
 import { test, expect, JSON_HEADERS } from './support/fixtures';
 
-
 test.describe('Métodos HTTP inválidos', { tag: '@negative' }, () => {
   const cases: Array<{ method: 'put' | 'patch' | 'delete' | 'post'; path: string }> = [
     { method: 'put', path: '/booking' },

@@ -31,8 +31,9 @@ export class LoginPage extends BasePage {
   }
 
   async isLoginFormVisible(): Promise<boolean> {
-    return this.loginButton
-      .waitFor({ state: 'visible', timeout: 5_000 })
-      .then(() => true, () => false);
+    return this.loginButton.waitFor({ state: 'visible', timeout: 5_000 }).then(
+      () => true,
+      () => false,
+    );
   }
 }

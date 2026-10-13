@@ -2,7 +2,6 @@ import { test, expect, expectJson } from './support/fixtures';
 import { bookingListSchema, bookingSchema } from './support/schemas';
 import { NON_EXISTENT_ID } from './support/data';
 
-
 test.describe('GET /booking - listagem', { tag: ['@smoke', '@positive'] }, () => {
   test('retorna lista de IDs com schema válido', async ({ request }) => {
     const body = await expectJson(await request.get('/booking'), 200);
@@ -59,7 +58,6 @@ test.describe('GET /booking/:id (negativos)', { tag: '@negative' }, () => {
     expect(response.status()).toBe(404);
   });
 
-
   for (const id of ['abc', '-1', '0']) {
     test(`ID inválido "${id}" não retorna reserva`, async ({ request }) => {
       const response = await request.get(`/booking/${encodeURIComponent(id)}`);
@@ -67,14 +65,13 @@ test.describe('GET /booking/:id (negativos)', { tag: '@negative' }, () => {
     });
   }
 
-
   for (const id of ['1.5', "1'OR'1'='1"]) {
     test(`ID malformado "${id}" não causa erro de servidor nem vaza dados`, async ({ request }) => {
       const response = await request.get(`/booking/${encodeURIComponent(id)}`);
       expect(response.status()).toBeLessThan(500);
       if (response.status() === 200) {
         const body = await response.json();
-        expect(Array.isArray(body)).toBe(false); 
+        expect(Array.isArray(body)).toBe(false);
       }
     });
   }

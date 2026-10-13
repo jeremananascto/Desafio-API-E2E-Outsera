@@ -3,7 +3,7 @@ import { test, expect } from './support/fixtures';
 test.describe('Health check - GET /ping', { tag: ['@smoke', '@positive'] }, () => {
   test('API responde ao healthcheck', async ({ request }) => {
     const response = await request.get('/ping');
-   
+
     expect(response.status()).toBe(201);
     expect(await response.text()).toBe('Created');
   });

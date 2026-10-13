@@ -13,12 +13,9 @@ export interface CreatedBooking {
   payload: Booking;
 }
 
-
 export const rawBody = (text: string): Buffer => Buffer.from(text, 'utf-8');
 
-
 export const authCookie = (token: string) => ({ Cookie: `token=${token}` });
-
 
 export const basicAuth = (user = env.api.username, pass = env.api.password) => ({
   Authorization: `Basic ${Buffer.from(`${user}:${pass}`).toString('base64')}`,
@@ -35,16 +32,14 @@ async function createBooking(
 }
 
 async function safeDelete(request: APIRequestContext, id: number, token: string): Promise<void> {
-
   await request.delete(`/booking/${id}`, { headers: authCookie(token) }).catch(() => undefined);
 }
 
 type Fixtures = {
- 
   authToken: string;
 
   booking: CreatedBooking;
-  
+
   bookingFactory: (overrides?: Partial<Booking>) => Promise<CreatedBooking>;
 };
 
@@ -75,7 +70,6 @@ export const test = base.extend<Fixtures>({
 });
 
 export { expect };
-
 
 export async function expectJson(response: APIResponse, status: number): Promise<unknown> {
   expect(response.status()).toBe(status);

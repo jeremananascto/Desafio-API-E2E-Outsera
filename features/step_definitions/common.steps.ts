@@ -27,6 +27,5 @@ Then('a URL deve conter {string}', async function (this: CustomWorld, fragment: 
 });
 
 Then('devo ver a página {string}', async function (this: CustomWorld, title: string) {
-
   await expect(this.page.locator('[data-test="title"]')).toHaveText(title);
 });

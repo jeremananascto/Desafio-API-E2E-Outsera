@@ -2,7 +2,6 @@ import { test, expect, JSON_HEADERS, authCookie } from './support/fixtures';
 import { buildBooking } from './support/data';
 import { bookingSchema, createBookingResponseSchema } from './support/schemas';
 
-
 test.describe('Ciclo de vida completo da reserva', { tag: ['@e2e', '@positive'] }, () => {
   test('CRUD completo encadeado', async ({ request, authToken }) => {
     const auth = { ...JSON_HEADERS, ...authCookie(authToken) };
