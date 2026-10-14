@@ -1,4 +1,4 @@
-# We Do IT — Automação de Testes (API · E2E · CI/CD)
+# — Automação de Testes (API · E2E · CI/CD)
 
 Suíte de automação de testes construída como se fosse para produção: testes de **API** (Playwright Test), **E2E** com **Cucumber + Playwright** (Page Object Pattern) e pipeline de **CI/CD** no GitHub Actions, com relatórios e evidências publicados como artefatos.
 
