@@ -1,3 +1,4 @@
+import { expect } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 export class CartPage extends BasePage {
@@ -24,6 +25,7 @@ export class CartPage extends BasePage {
 
   async backToShopping(): Promise<void> {
     await this.continueShopping.click();
-    await this.page.waitForURL(/inventory\.html/);
+    await this.page.waitForURL(/\/inventory\.html(?:[?#].*)?$/);
+    await expect(this.page.locator('[data-test="title"]')).toHaveText('Products');
   }
 }

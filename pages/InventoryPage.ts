@@ -1,3 +1,4 @@
+import { expect } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 const slug = (name: string): string => name.toLowerCase().replace(/\s+/g, '-');
@@ -16,7 +17,9 @@ export class InventoryPage extends BasePage {
   }
 
   async pageTitle(): Promise<string> {
-    await this.title.waitFor();
+    // Aguarda o estado final do catálogo, não apenas a existência do seletor
+    // que pode ainda conter o título da tela anterior durante a navegação.
+    await expect(this.title).toHaveText('Products');
     return (await this.title.innerText()).trim();
   }
 

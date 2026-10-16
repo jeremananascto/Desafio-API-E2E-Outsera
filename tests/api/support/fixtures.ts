@@ -32,7 +32,44 @@ async function createBooking(
 }
 
 async function safeDelete(request: APIRequestContext, id: number, token: string): Promise<void> {
-  await request.delete(`/booking/${id}`, { headers: authCookie(token) }).catch(() => undefined);
+  try {
+    // Alguns testes DELETE removem a própria massa. O teardown deve confirmar
+    // esse estado antes de tentar excluí-la novamente.
+    const current = await request.get(`/booking/${id}`);
+    if (current.status() === 404) {
+      console.info(`[CLEANUP] Reserva ${id} já não existe; nenhuma ação necessária.`);
+      return;
+    }
+    if (current.status() !== 200) {
+      const body = await current.text().catch(() => '<corpo indisponível>');
+      throw new Error(
+        `Não foi possível verificar a reserva ${id} antes do cleanup: ` +
+        `HTTP ${current.status()} ${current.statusText()}; resposta: ${body.slice(0, 500)}`,
+      );
+    }
+
+    const response = await request.delete(`/booking/${id}`, { headers: authCookie(token) });
+    if (response.status() !== 201) {
+      // Protege contra remoção concorrente: só considera resolvido se a API
+      // confirmar que o recurso realmente deixou de existir.
+      const verification = await request.get(`/booking/${id}`);
+      if (verification.status() === 404) {
+        console.info(`[CLEANUP] Reserva ${id} já foi removida durante o cleanup.`);
+        return;
+      }
+      const body = await response.text().catch(() => '<corpo indisponível>');
+      const message =
+        `Cleanup da reserva ${id} falhou: HTTP ${response.status()} ${response.statusText()}; ` +
+        `GET posterior retornou ${verification.status()}; resposta: ${body.slice(0, 500)}`;
+      console.error(`[CLEANUP] ${message}`);
+      throw new Error(message);
+    }
+    console.info(`[CLEANUP] Reserva ${id} removida com sucesso.`);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    console.error(`[CLEANUP] Erro ao remover reserva ${id}: ${detail}`);
+    throw new Error(`Falha no teardown ao remover a reserva ${id}.`, { cause: error });
+  }
 }
 
 type Fixtures = {

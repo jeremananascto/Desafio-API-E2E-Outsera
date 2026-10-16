@@ -25,7 +25,22 @@ if (e2e) {
     }
   }
   failed ||= bad > 0;
-  lines.push(`| E2E (Cucumber) | ${bad ? '❌' : '✅'} | ${passed} cenários ok, ${bad} falhas |`);
+  const retryFile = 'reports/e2e/retries.jsonl';
+  const retryEvents = fs.existsSync(retryFile)
+    ? fs.readFileSync(retryFile, 'utf8').split(/\\r?\\n/).filter(Boolean).map((line) => {
+        try { return JSON.parse(line); } catch { return null; }
+      }).filter(Boolean)
+    : [];
+  const retriedScenarios = new Set(retryEvents.map((event) => event.scenario));
+  lines.push(
+    `| E2E (Cucumber) | ${bad ? '❌' : retriedScenarios.size ? '⚠️' : '✅'} | ` +
+    `${passed} cenários ok, ${bad} falhas, ${retriedScenarios.size} cenários com retry ` +
+    `(${retryEvents.length} tentativas repetidas) |`,
+  );
+  if (retriedScenarios.size) {
+    lines.push('', '### Instabilidades E2E detectadas', '');
+    for (const scenario of retriedScenarios) lines.push(`- ${scenario}`);
+  }
 }
 
 console.log(lines.join('\n'));

@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   After,
   AfterAll,
@@ -18,6 +20,10 @@ let browser: Browser;
 let demoServer: Server;
 
 BeforeAll(async function () {
+  fs.mkdirSync('reports/e2e/traces', { recursive: true });
+  // Cada execução começa com um registro limpo de retries.
+  fs.rmSync('reports/e2e/retries.jsonl', { force: true });
+
   const demoApp = await import('../../demo-app/server.js');
 
   demoServer = await demoApp.start(env.e2e.demoAppPort);
@@ -63,6 +69,27 @@ Before(async function (this: CustomWorld) {
 
 After(async function (this: CustomWorld, scenario: ITestCaseHookParameter) {
   const failed = scenario.result?.status === Status.FAILED;
+
+  // Cucumber executa o hook também na tentativa que será repetida.
+  // Guardamos um evento por linha para o resumo consolidado da CI.
+  if (scenario.willBeRetried) {
+    const reportDir = 'reports/e2e';
+    fs.mkdirSync(reportDir, { recursive: true });
+    fs.appendFileSync(
+      path.join(reportDir, 'retries.jsonl'),
+      JSON.stringify({
+        scenario: scenario.pickle.name,
+        status: scenario.result?.status ?? 'UNKNOWN',
+        timestamp: new Date().toISOString(),
+        retryScheduled: true,
+      }) + '\\n',
+    );
+    this.attach(
+      `Instabilidade detectada: "${scenario.pickle.name}" falhou e será reexecutado pelo retry do Cucumber.`,
+      'text/plain',
+    );
+    console.warn(`[FLAKY] "${scenario.pickle.name}" falhou; nova tentativa agendada.`);
+  }
 
   try {
     const screenshot = await this.page.screenshot({ fullPage: true });

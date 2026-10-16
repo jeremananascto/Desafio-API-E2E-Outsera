@@ -48,7 +48,7 @@ Suíte de automação de testes construída como se fosse para produção: teste
 
 | Item | Versão |
 |---|---|
-| Node.js | ≥ 20 (CI usa 20; desenvolvimento validado com 22) |
+| Node.js | ≥ 22 (requisito declarado em `package.json` e usado na CI) |
 | @playwright/test / playwright | 1.64.0 |
 | @cucumber/cucumber | 13.3.0 |
 | TypeScript / ts-node | 6.0.3 / 10.9.2 |
@@ -90,7 +90,7 @@ npm run report:e2e            # gera reports/e2e/html/index.html (com screenshot
 npm run test:e2e:dry          # valida Gherkin + steps sem abrir navegador
 HEADLESS=false SLOW_MO=300 npm run test:e2e   # modo visual para depuração
 ```
-Saídas: `reports/e2e/cucumber-report.html` (relatório nativo), `reports/e2e/html` (relatório detalhado), `cucumber-report.json`, `cucumber-junit.xml`, `reports/e2e/traces/*.zip` (falhas; abra com `npx playwright show-trace`).
+O retry do Cucumber na CI é registrado em `reports/e2e/retries.jsonl`; o resumo consolidado destaca cenários que precisaram de nova tentativa. Retry não é tratado como evidência de estabilidade.\n\nSaídas: `reports/e2e/cucumber-report.html` (relatório nativo), `reports/e2e/html` (relatório detalhado), `cucumber-report.json`, `cucumber-junit.xml`, `reports/e2e/traces/*.zip` (falhas; abra com `npx playwright show-trace`), `reports/e2e/retries.jsonl` (tentativas repetidas).
 
 Filtros por tag em qualquer perfil: `npx cucumber-js --tags "@checkout and @negative"`.
 
