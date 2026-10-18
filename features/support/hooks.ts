@@ -70,8 +70,7 @@ Before(async function (this: CustomWorld) {
 After(async function (this: CustomWorld, scenario: ITestCaseHookParameter) {
   const failed = scenario.result?.status === Status.FAILED;
 
-  // Cucumber executa o hook também na tentativa que será repetida.
-  // Guardamos um evento por linha para o resumo consolidado da CI.
+  
   if (scenario.willBeRetried) {
     const reportDir = 'reports/e2e';
     fs.mkdirSync(reportDir, { recursive: true });
